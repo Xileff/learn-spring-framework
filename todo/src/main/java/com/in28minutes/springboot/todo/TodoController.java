@@ -9,13 +9,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @SessionAttributes("name")
 @Controller
 public class TodoController {
-    private TodoService todoService;
+    private final TodoService todoService;
 
     public TodoController(TodoService todoService) {
         this.todoService = todoService;
@@ -23,7 +22,8 @@ public class TodoController {
 
     @RequestMapping("list-todos")
     public String listAllTodos(ModelMap model) {
-        List<Todo> todos = todoService.findByUsername("admin");
+        String username = getUsername(model);
+        List<Todo> todos = todoService.findByUsername(username);
         model.addAttribute("todos", todos);
 
         return "listTodos";
@@ -42,7 +42,7 @@ public class TodoController {
             return "todo";
         }
 
-        String username = model.get("name").toString();
+        String username = getUsername(model);
         todoService.addTodo(todo.getDescription(), todo.getTargetDate(), username, false);
         return "redirect:list-todos";
     }
@@ -70,5 +70,10 @@ public class TodoController {
         todoService.updateTodo(todo);
 
         return "redirect:list-todos";
+    }
+
+    private static String getUsername(ModelMap model) {
+        return model.get("name").toString();
+
     }
 }
